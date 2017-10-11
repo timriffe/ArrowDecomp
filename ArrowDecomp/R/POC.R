@@ -28,6 +28,7 @@ extractpi <- function(A){
 pi2u <- function(pivec){
 	cbind(rbind(0,diag(pivec)),0)
 }
+
 pi2U <- function(pivecs){
 	u1 <- pi2u(pivecs[, 1])
 	u2 <- pi2u(pivecs[, 2])

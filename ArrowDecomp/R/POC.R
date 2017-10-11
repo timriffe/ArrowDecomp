@@ -90,7 +90,7 @@ A2 <- as.matrix(read.csv("Data/Dudel/Transition matrices/Pmat_b_f_2009.csv"))
 library(DecompHoriuchi)
 
 this.decomp <- decompDudel(A1,A2) # takes ca 1 min on Tim's old laptop
-
+this.decomp
 sum(this.decomp) # check sums
 
 pilong2WLE50(c(extractpi(A2))) - pilong2WLE50(c(extractpi(A1))) 

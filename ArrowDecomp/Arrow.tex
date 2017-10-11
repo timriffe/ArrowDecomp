@@ -1,0 +1,54 @@
+\documentclass{article}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{caption}
+\usepackage{placeins}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{setspace}
+\usepackage{float}
+
+%\usepackage[active,tightpage]{preview}
+\usepackage{natbib}
+\bibpunct{(}{)}{,}{a}{}{;} 
+\usepackage{url}
+\usepackage{nth}
+\usepackage{authblk}
+% for the d in integrals
+\newcommand{\dd}{\; \mathrm{d}}
+\newcommand{\tc}{\quad\quad\text{,}}
+\newcommand{\tp}{\quad\quad\text{.}}
+\defcitealias{HMD}{HMD}
+
+\newcommand\ackn[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+\begin{document}
+
+%\title{Macro patterns in the shape of aging}
+\title{Flow decompositions in multistate Markov models}
+\author[1]{Tim Riffe\thanks{riffe@demogr.mpg.de}}
+\affil[1]{Max Planck Institute for Demographic Research}
+\maketitle
+
+\begin{abstract}
+We demonstrate the application of standard decomposition techniques to decompose
+differences between synthetic indices derived from age-stage Markov matrix
+models into differences due to each stage transition. An example is given on the basis
+of transition matrices from an analysis of working life expectancy in the
+United States.
+\end{abstract}
+
+\section{Introduction}
+Age state matrix models of human populations can result in matrices that are
+large and unwieldy to post-process. I describe the application of a
+pseudo-continuous time decomposition method \citep{horiuchi2008} 
+
+\singlespacing
+\bibliographystyle{plainnat}
+  \bibliography{references} 
+
+\end{document}

@@ -2,13 +2,10 @@
 # Author: tim
 ###############################################################################
 
-# redo POC to remove self-arrows and handle death transitions properly:
+# redo POC to remove self-arrows and include death transitions in decomp:
 
-A <- A1
-#  X   2   3
-#  4   X   6
-#  7   8   X
-# 10  11  12
+setwd("/home/tim/workspace/ArrowDecomp")
+
 
 
 getsub <- function(Mat){
@@ -58,8 +55,7 @@ extractfrom <- function(A){
 	
 	c(cbind(Wfrom, Ifrom, Rfrom))
 }
-pilongout <- extractfrom(A1)
-diag(A1[2:50,1:49])
+
 piout2U <- function(pilongout){
 	
 	dim(pilongout) <- c(49,9)
@@ -116,7 +112,10 @@ decompDudel2 <- function(A1,A2,N=10,comp= c(.7,.25,.05)){
 	rbind(wirnot, D = todeath)
 }
 
-
+A1 <- as.matrix(read.csv("Data/Dudel/Transition matrices/Pmat_b_f_2004.csv"))
+A2 <- as.matrix(read.csv("Data/Dudel/Transition matrices/Pmat_b_f_2009.csv"))
+#devtools::install_github("timriffe/DecompHoriuchi/DecompHoriuchi")
+library(DecompHoriuchi)
 
 decomptest <- decompDudel2(A1,A2)
 sum(decomptest, na.rm=TRUE)

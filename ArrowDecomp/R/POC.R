@@ -1,6 +1,7 @@
 
 # Proof of concept: arrow decomposition.
-
+# this one includes self-loops and excludes death transitions, perhaps not reasonable.
+# see POC2.R for the reverse
 setwd("/home/tim/workspace/ArrowDecomp")
 
 

@@ -111,14 +111,116 @@ decompDudel2 <- function(A1,A2,N=10,comp= c(.7,.25,.05)){
 	diag(wirnot) <- NA
 	rbind(wirnot, D = todeath)
 }
+decompbars  <- function(decmat,add = FALSE,cols=c("red", "blue")){
+	
+	x <- col(decmat) - 1
+	y <- abs(row(decmat) - nrow(decmat))
+	
+	if(! add){
+		plot(NULL, 
+				xlim = c(0, ncol(decmat)),
+				ylim =c (0, nrow(decmat)),
+				type = "n", 
+				asp = 1, 
+				xlab = "", 
+				ylab = "", 
+				axes = FALSE)
+	}
+	x       <- c(x)
+	y       <- c(y)
+	values  <- c(decmat)
+	lim     <- max(abs(values),na.rm=TRUE)
+	valuesb <- values / (2*lim)
+	rect(0:2,3:1,1:3,4:2,border=NA,col = gray(.9))
+	rect(x, y + .5, x + 1, y + .5 + valuesb,
+			col = ifelse(sign(valuesb) == 1, cols[1], cols[2]))	
+	
+	rect(x,y,x+1,y+1,border = gray(.8),lwd = 2)
+	
+	text(1:ncol(decmat)-.5,nrow(decmat),c("W","I","R"),font=2,pos=3,cex=1.5,xpd=TRUE)
+	text(0,1:nrow(decmat)-.5,c("D","R","I","W"),font=2,pos=2,cex=1.5,xpd=TRUE)
+	
+}
+
+decompbars2 <- function(
+		decmat,
+		add = FALSE,
+		cols = c("red", "blue"),
+		lim  =  max(abs(decmat), na.rm = TRUE)){
+	
+	x <- col(decmat) - 1
+	y <- abs(row(decmat) - nrow(decmat))
+	
+	if(! add){
+		plot(NULL, 
+				xlim = c(0, ncol(decmat)),
+				ylim =c (0, nrow(decmat)),
+				type = "n", 
+				asp = 1, 
+				xlab = "", 
+				ylab = "", 
+				axes = FALSE)
+	}
+	x       <- c(x)
+	y       <- c(y)
+	values  <- c(decmat)
+	valuesb <- values / lim
+	rect(0:2,3:1,1:3,4:2,border=NA,col = gray(.9))
+	rect(x, y , x + 1, y + abs(valuesb),
+			col = ifelse(sign(valuesb) == 1, cols[1], cols[2]))	
+	
+	rect(x,y,x+1,y+1,border = gray(.8),lwd = 2)
+	
+	text(1:ncol(decmat)-.5,nrow(decmat),c("W","I","R"),font=2,pos=3,cex=1.5,xpd=TRUE)
+	text(0,1:nrow(decmat)-.5,c("D","R","I","W"),font=2,pos=2,cex=1.5,xpd=TRUE)
+	
+}
 
 A1 <- as.matrix(read.csv("Data/Dudel/Transition matrices/Pmat_b_f_2004.csv"))
 A2 <- as.matrix(read.csv("Data/Dudel/Transition matrices/Pmat_b_f_2009.csv"))
 #devtools::install_github("timriffe/DecompHoriuchi/DecompHoriuchi")
 library(DecompHoriuchi)
 
-decomptest <- decompDudel2(A1,A2)
-sum(decomptest, na.rm=TRUE)
+decompA <- decompDudel2(A1,A2)
+sum(decompA, na.rm=TRUE)
 # works:
 piout2WLE50(extractfrom(A2)) - piout2WLE50(extractfrom(A1))
 
+decompbars2(decompA)
+# problem: how to visualize contrib with directionality?
+B1 <- as.matrix(read.csv("Data/Dudel/Transition matrices/Pmat_b_f_edu0_2009.csv"))
+B2 <- as.matrix(read.csv("Data/Dudel/Transition matrices/Pmat_b_f_edu2_2009.csv"))
+
+decompB  <- decompDudel2(B1,B2)
+decompbars2(decompB)
+sum(decompB, na.rm = TRUE)
+piout2WLE50(extractfrom(B2)) - piout2WLE50(extractfrom(B1))
+
+
+library(xtable)
+(thetaA1 <- piout2WLE50(extractfrom(A1)))
+(thetaA2 <- piout2WLE50(extractfrom(A2)))
+
+(thetaB1 <- piout2WLE50(extractfrom(B1)))
+(thetaB2 <- piout2WLE50(extractfrom(B2)))
+
+thetaA1 - thetaA2
+xtable(decompA)
+pdf("/home/tim/git/ArrowDecomp/ArrowDecomp/Figures/decA.pdf",width=5,height=6)
+par(mai=c(.1,.5,.5,.1))
+decompbars2(decompA)
+dev.off()
+
+lim <- max(abs(c(decompA,decompB)),na.rm=TRUE)
+
+
+pdf("/home/tim/git/ArrowDecomp/ArrowDecomp/Figures/decA2.pdf", width = 5, height = 6)
+par(mai=c(.1,.5,.5,.1))
+decompbars2(decompA,lim=lim)
+dev.off()
+
+pdf("/home/tim/git/ArrowDecomp/ArrowDecomp/Figures/decB.pdf", width = 5, height = 6)
+par(mai=c(.1,.5,.5,.1))
+decompbars2(decompB, lim = lim)
+dev.off()
+thetaB2 - thetaB1

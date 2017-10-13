@@ -35,7 +35,7 @@
 \maketitle
 
 \begin{abstract}
-We demonstrate the application of standard decomposition techniques to decompose
+I demonstrate the application of standard decomposition techniques to decompose
 differences between synthetic indices derived from age-stage Markov matrix
 models into differences due to each stage transition. An example is given on the basis
 of transition matrices from an analysis of working life expectancy in the
@@ -150,8 +150,6 @@ implemented in a generic form \texttt{R} in the package
 \texttt{github}: \url{https://github.com/timriffe/DecompHoriuchi}.}, which means
 I only need to write a function that does \eqref{eq:zeta}.
 
-
-
 \section{Application}
 I apply this approach to a few of the transition matrices published
 by \citet{Dudel2017} for ages 50+. Specifically, I decompose differences in
@@ -222,7 +220,6 @@ negative contributions, respectively. }
 \end{center}
 \end{figure}
 
-\FloatBarrier
 For example, highly educated black females in 2009 had a WLE 2.26 years greater
 than low educated bloack females. The largest single contribution to this
 difference was due to mortality differentials of employed persons: 2.4 years.
@@ -258,6 +255,7 @@ worth mentioning that this positive gradient in 2009 was offset by greater
 transitions from inactivity to employment for low-educated black females, and
 that this contribution itself was roughly equal in magnitude to the total loss
 in WLE from 2004 to 2009.
+\FloatBarrier
 
 \subsection{A word on weighting}
 For this particular application, a vector $\pi$ is required to weight together
@@ -284,7 +282,8 @@ This approach is advantegous also because it requires little deep thought or
 programming to add onto an analysis. It has the potential to reveal things that
 one might not have suspected at all, such as the huge influence of mortality on
 educational gradients in WLE among US black females in 2009.\footnote{Maybe you
-suspected this, I didn't}
+suspected this, I didn't} This note, along with \texttt{R} code used to generate
+results, is acessible here:\\ \url{https://github.com/timriffe/ArrowDecomp}
 
 
 \singlespacing

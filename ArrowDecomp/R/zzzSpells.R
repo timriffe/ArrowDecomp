@@ -1,7 +1,13 @@
 # Author: tim
 ###############################################################################
 
-
+##################################################
+# This work moved to separate project 'Spells'
+##################################################
+# below code will not be developed here.
+# ----------------------------------------
+do.this <- FALSE
+if(do.this){
 library(markovchain)
 library(spatstat)
 # here I just read in the first matrix given in the supplementary material to:
@@ -109,6 +115,7 @@ qdens <- function(X,p=.5){
 				}
 			},p=p)
 }
+
 intervalpoly <- function(x,u,l,...){
 	una <- is.na(u)
 	lna <- is.na(l)
@@ -142,5 +149,89 @@ text(55,5,"median",cex=1.5,font=)
 text(55,8,"mean",cex=1.5,col = "red",font=2)
 dev.off()
 
+x <- RTraj_clean[,3]
 
+spell_dur_before <- function(x, state = "Inactive", not_first = FALSE){
+	
+	# starting left x position for each observation
+	x_age             <- 1:length(x) - 1
+	names(x_age)      <- x
+	
+	sec               <- rle(x)
+	spells            <- sec$values
+	durs              <- sec$lengths
+	durs2             <- durs
+	durs2[spells != state] <- NA
+	
+	n          <- length(durs)
+	x_lefts    <- cumsum(c(0,durs[-n]))
+	x_lefts[spells != state] <- NA          
+	if (not_first){
+		if (state %in% x){
+			x_lefts[which(spells == state)[1]] <- NA
+		}
+	}
+	
+	#n_spells          <- sum(spells == state)
+	spell_starts         <- rep(x_lefts, durs)
+	time_spent           <- x_age - spell_starts
+	#spell_age[x != state] <- NA
+	names(time_spent)    <- x_age
+	time_spent + .5
+}
+spell_dur_after <- function(x, state = "Inactive", not_first = FALSE){
+	
+	# starting left x position for each observation
+	x_age             <- 1:length(x) - 1
+	names(x_age)      <- x
+	
+	sec               <- rle(x)
+	spells            <- sec$values
+	durs              <- sec$lengths
+	durs2             <- durs
+	durs2[spells != state] <- NA
+	
+	n          <- length(durs)
+	x_lefts    <- cumsum(c(0,durs[-n]))
+	x_rights   <- x_lefts + durs
+	x_rights[spells != state] <- NA          
+	if (not_first){
+		if (state %in% x){
+			x_rights[which(spells == state)[1]] <- NA
+		}
+	}
+	
+	#n_spells          <- sum(spells == state)
+	spell_ends           <- rep(x_rights, durs)
+	time_left            <- spell_ends - x_age
+	#spell_age[x != state] <- NA
+	names(time_left)    <- x_age
+	time_left - .5
+}
+
+InactLeft  <- apply(RTraj_clean, 2, spell_dur_after, state = "Inactive")
+InactSpent <- apply(RTraj_clean, 2, spell_dur_before, state = "Inactive")
+
+InactLeftMean             <- rowMeans(InactLeft,na.rm=TRUE)
+InactSpentMean             <- rowMeans(InactSpent,na.rm=TRUE)
+
+plot(50:100, InactLeftMean, type = 'l',ylim=c(0,18),
+		main = "Conditional average 'inactive' time left in spell\ngiven spell membership (not spell entry or exit)",
+		sub = "quantile contours in 2.5% intervals",
+		xlab = "Age", ylab = "spell duration",col="red",
+		xlim = c(50,80))
+intervalfan(InactLeft,50:100,border=NA,col = "#00000010",probs=seq(.05,.95,by=.05))
+lines(50:100,qdens(InactLeft,.5),col = "black",lwd=2)
+lines(50:100,InactLeftMean,col = "red",lwd=2)
+
+
+plot(50:100, InactSpentMean, type = 'l',ylim=c(0,18),
+		main = "Conditional average 'inactive' time spent in spell\ngiven spell membership (not spell entry or exit)",
+		sub = "quantile contours in 2.5% intervals",
+		xlab = "Age", ylab = "spell duration",col="red",
+		xlim = c(50,80))
+intervalfan(InactSpent,50:100,border=NA,col = "#00000010",probs=seq(.05,.95,by=.05))
+lines(50:100,qdens(InactSpent,.5),col = "black",lwd=2)
+lines(50:100,InactSpentMean,col = "red",lwd=2)
+}
 

@@ -111,6 +111,7 @@ decompDudel2 <- function(A1,A2,N=10,comp= c(.7,.25,.05)){
 	diag(wirnot) <- NA
 	rbind(wirnot, D = todeath)
 }
+
 decompbars  <- function(decmat,add = FALSE,cols=c("red", "blue")){
 	
 	x <- col(decmat) - 1

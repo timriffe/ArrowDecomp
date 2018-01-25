@@ -1,3 +1,11 @@
+% TODO: if transition rates are probabilities note it may make
+% more sense to logit transform prior to decomp, and make the decomp
+% function start with an expit. That way the linear path is more nuanced when
+% values are near 0 or 1. Likewise, removal of self-arrows has analogue in 
+% continuous Markov matrices. Would actually be better to decompose wrt rates
+% rather than probabilities, due to constrained probability sum of 1, but going
+% backward from prob to rate is tough in multistate.
+
 \documentclass{article}
 \usepackage[a4paper, margin=2.5cm]{geometry}
 \usepackage{amsmath}

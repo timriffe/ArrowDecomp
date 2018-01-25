@@ -68,6 +68,12 @@ lines(decpx,col="red",lty=2)
 # makes no difference, so exit-only decomp is a matter of interpretation.
 #-------------------------------------------
 
+library(popbio)
+data(teasel)
+
+
+
+
 
 
 

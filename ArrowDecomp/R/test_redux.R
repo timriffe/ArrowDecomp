@@ -18,6 +18,7 @@ source("/home/tim/git/HLEDecomp/HLEDecomp/Code/R/Functions.R")
 
 
 
+
 f_dec_out <- function(outvec){
 	datout  <- v2m(outvec, ntrans = 2)
 	# remove death rates and replace with self-arrows, needed to make
@@ -55,7 +56,7 @@ getcolsall <- function(ntrans,dead=ntrans+1){
 f_dec_other <- function(othervec, names = c("m11", "m13","m22","m23")){
 	datother           <- v2m(othervec, ntrans = 2)
 	colnames(datother) <- names
-	datself            <-other2self(datother,2)
+	datself            <- other2self(datother,2)
 	
 	# remove death rates and replace with self-arrows, needed to make
 	sum(U2N(data_2_U(datself,2),1)[,c(1,6)] %*% c(.5,.5))
@@ -90,19 +91,122 @@ f_dec_self(selfvec.2)-f_dec_self(selfvec.1)
 
 
 library(DemoDecomp)
-s1 <- v2m(horiuchi(f_dec_self,selfvec.1,selfvec.2,200),2)
-o1 <- v2m(horiuchi(f_dec_out,outvec.1,outvec.2,200),2)
+# do the different decomposition types.
+s1   <- v2m(horiuchi(f_dec_self,selfvec.1,selfvec.2,200),2)
+o1   <- v2m(horiuchi(f_dec_out,outvec.1,outvec.2,200),2)
 oth1 <- v2m(horiuchi(f_dec_other,othervec.1,othervec.2,200),2)
 colnames(s1) <- c("m11","m12","m21","m22")
 colnames(o1) <- c("m12","m13","m21","m23")
 colnames(oth1) <- c("m11","m13","m22","m23")
 
+# just to line things up
 compareCols <- function(M,ntrans=2){
 	allcols <- getcolsall(ntrans)
 	MM <- matrix(nrow=nrow(M),ncol=length(allcols),dimnames=list(NULL,allcols))
 	MM[,colnames(M)]<- M
 	MM
 }
+
+# Compare these, yikes!
 colSums(compareCols(s1))
 colSums(compareCols(o1))
 colSums(compareCols(oth1))
+
+
+
+# -------------------------------------------------------- #
+# Now for proportional rescaling response to perturbation. #
+# -------------------------------------------------------- #
+allcols <- getcolsall(ntrans)
+
+vecall <- c(m11.1,m12.1,m13.1,m21.1,m22.1,m23.1)
+
+v2mall <- function(vecall,ntrans=2){
+	N <- length(vecall)
+	dim(vecall) <- c(N / (ntrans^2+ntrans), ntrans^2+ntrans)
+	vecall
+}
+
+f_dec_all <- function(vecall,ntrans=2){
+	
+	datall           <- v2mall(vecall)
+	colnames(datall) <- getcolsall(ntrans)
+	
+	# ensure constrained
+	for (i in 1:ntrans){
+		iii <- ((i-1)*(ntrans+1) +1):(i*(ntrans+1))
+		ddd <- datall[,iii]
+		ddd <- ddd / rowSums(ddd)
+		datall[,iii] <- ddd
+	}
+	
+	sum(U2N(data_2_U(datall,2),1)[,c(1,6)] %*% c(.5,.5))
+}
+
+
+vecall.1 <- c(m11.1,m12.1,m13.1,m21.1,m22.1,m23.1)
+vecall.2 <- c(m11.2,m12.2,m13.2,m21.2,m22.2,m23.2)
+
+f_dec_all(vecall.2)-
+f_dec_all(vecall.1)
+
+all1 <- v2mall(horiuchi(f_dec_all,vecall.1,vecall.2,200),2)
+colnames(all1) <- getcolsall(2)
+sum(all1)
+
+colSums(compareCols(s1))
+colSums(compareCols(o1))
+colSums(compareCols(oth1))
+colSums(all1)
+
+f_dec_all_i <- function(vecall,delta,i,ntrans=2){
+	
+	datall           <- v2mall(vecall)
+	colnames(datall) <- getcolsall(ntrans)
+	
+	rw <- row(datall)[i]
+	co <- col(datall)[i]
+	
+	if (delta != 0){
+		for (j in 1:ntrans){
+			iii          <- ((j-1)*(ntrans+1) +1):(j*(ntrans+1))
+			if (co %in% iii){
+				ccoo         <- which(iii == co)
+				ddd          <- datall[,iii]
+				ddd[rw,ccoo] <- ddd[rw,ccoo] + delta
+				ddd[rw,-ccoo]<- (1-ddd[rw,ccoo]) * ddd[rw,-ccoo]/sum(ddd[rw,-ccoo])
+				datall[,iii] <- ddd
+			}
+		}
+	}
+	sum(U2N(data_2_U(datall,2),1)[,c(1,6)] %*% c(.5,.5))
+}
+vecall <- vecall.1
+delta <-  delta[1]
+
+N           <- 20
+d 			<- vecall.2 - vecall.1
+n 			<- length(vecall.2)
+delta 		<- d/N
+x           <- vecall.1 + d * matrix(rep(.5:(N-.5)/N,n), byrow = TRUE, ncol = N)
+cc          <- matrix(0, nrow = n, ncol = N)
+zeros       <- rep(0,n)
+for (j in 1:N){
+	
+	for (i in 1:n){
+		cc[i,j] <- f_dec_all_i(vecall = x[, j], delta = delta[i], i=i,2) - 
+				   f_dec_all_i(vecall = x[, j], delta = -delta[i], i=i, 2)
+	}
+}	
+	#cat("Error of decomposition (in %)\ne =",100*(sum(cc)/(y2-y1)-1),"\n")
+all2 <- v2mall(rowSums(cc))
+colnames(all2) <- getcolsall(2)
+
+colSums(compareCols(s1))
+colSums(compareCols(o1))
+colSums(compareCols(oth1))
+colSums(all1) # constrained
+colSums(all2)
+
+plot(colSums(all1),colSums(all2),asp=1)
+abline(a=0,b=1)

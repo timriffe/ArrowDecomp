@@ -159,7 +159,9 @@ colSums(compareCols(o1))
 colSums(compareCols(oth1))
 colSums(all1)
 
-f_dec_all_i <- function(vecall,delta,i,ntrans=2){
+# This one perturbs the ith element
+
+f_dec_all_i <- function(vecall,delta_i=0,i=1,ntrans=2){
 	
 	datall           <- v2mall(vecall)
 	colnames(datall) <- getcolsall(ntrans)
@@ -167,20 +169,30 @@ f_dec_all_i <- function(vecall,delta,i,ntrans=2){
 	rw <- row(datall)[i]
 	co <- col(datall)[i]
 	
-	if (delta != 0){
+	if (delta_i != 0){
 		for (j in 1:ntrans){
 			iii          <- ((j-1)*(ntrans+1) +1):(j*(ntrans+1))
 			if (co %in% iii){
 				ccoo         <- which(iii == co)
 				ddd          <- datall[,iii]
-				ddd[rw,ccoo] <- ddd[rw,ccoo] + delta
-				ddd[rw,-ccoo]<- (1-ddd[rw,ccoo]) * ddd[rw,-ccoo]/sum(ddd[rw,-ccoo])
+				this.row     <- ddd[rw,]
+				pert.i       <- this.row[ccoo] 
+				scale.i      <- this.row[-ccoo]
+				pert.i       <- pert.i + delta_i
+				scale.i      <- (1-pert.i) * scale.i / sum(scale.i)
+				this.row[ccoo]  <- pert.i
+				this.row[-ccoo] <- scale.i
+				ddd[rw,]     <- this.row
 				datall[,iii] <- ddd
 			}
 		}
 	}
 	sum(U2N(data_2_U(datall,2),1)[,c(1,6)] %*% c(.5,.5))
 }
+
+
+matplot(t(cc),type='l')
+
 vecall <- vecall.1
 delta <-  delta[1]
 
@@ -194,19 +206,24 @@ zeros       <- rep(0,n)
 for (j in 1:N){
 	
 	for (i in 1:n){
-		cc[i,j] <- f_dec_all_i(vecall = x[, j], delta = delta[i], i=i,2) - 
-				   f_dec_all_i(vecall = x[, j], delta = -delta[i], i=i, 2)
+		cc[i,j] <- f_dec_all_i(vecall = x[, j], delta_i = delta[i]/2, i = i,2) - 
+				   f_dec_all_i(vecall = x[, j], delta_i = -delta[i]/2, i = i, 2)
 	}
 }	
 	#cat("Error of decomposition (in %)\ne =",100*(sum(cc)/(y2-y1)-1),"\n")
 all2 <- v2mall(rowSums(cc))
 colnames(all2) <- getcolsall(2)
 
+sum(cc)
+
 colSums(compareCols(s1))
 colSums(compareCols(o1))
 colSums(compareCols(oth1))
 colSums(all1) # constrained
 colSums(all2)
+
+plot(colSums(all2)/colSums(all1))
+
 
 plot(colSums(all1),colSums(all2),asp=1)
 abline(a=0,b=1)

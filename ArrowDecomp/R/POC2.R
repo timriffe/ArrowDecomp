@@ -4,7 +4,7 @@
 
 # redo POC to remove self-arrows and include death transitions in decomp:
 
-setwd("/home/tim/workspace/ArrowDecomp")
+setwd("/home/tim/git/ArrowDecomp/ArrowDecomp")
 
 
 

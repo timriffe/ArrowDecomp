@@ -193,10 +193,8 @@ f_dec_all_i <- function(vecall,delta_i=0,i=1,ntrans=2){
 
 matplot(t(cc),type='l')
 
-vecall <- vecall.1
-delta <-  delta[1]
 
-N           <- 20
+N           <- 200
 d 			<- vecall.2 - vecall.1
 n 			<- length(vecall.2)
 delta 		<- d/N

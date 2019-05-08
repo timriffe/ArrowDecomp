@@ -1,10 +1,3 @@
-% TODO: if transition rates are probabilities note it may make
-% more sense to logit transform prior to decomp, and make the decomp
-% function start with an expit. That way the linear path is more nuanced when
-% values are near 0 or 1. Likewise, removal of self-arrows has analogue in 
-% continuous Markov matrices. Would actually be better to decompose wrt rates
-% rather than probabilities, due to constrained probability sum of 1, but going
-% backward from prob to rate is tough in multistate.
 
 \documentclass{article}
 \usepackage[a4paper, margin=2.5cm]{geometry}
@@ -15,7 +8,8 @@
 \usepackage{subcaption}
 \usepackage{setspace}
 \usepackage{float}
-
+\usepackage{tikz}
+\usetikzlibrary{arrows,calc,positioning}
 %\usepackage[active,tightpage]{preview}
 \usepackage{natbib}
 \bibpunct{(}{)}{,}{a}{}{;} 
@@ -43,63 +37,34 @@
 \maketitle
 
 \begin{abstract}
-I demonstrate the application of standard decomposition techniques to decompose
-differences between synthetic indices derived from age-stage Markov matrix
-models into differences due to each stage transition. An example is given on the basis
-of transition matrices from an analysis of working life expectancy in the
-United States.
+I demonstrate the application of standard decomposition techniques to decompose differences between synthetic indices derived from discrete-time age-stage Markov matrix models (MS models) into differences due to each combinatin of age and stage transition, as well as the starting (radix) composition. An example is given on the basis of transition matrices from an analysis of working life expectancy in the United States.
 \end{abstract}
 
 \section{Introduction}
-I describe the application of a generic pseudo-continuous time decomposition
-\citep{horiuchi2008} of differences between synthetic indices derived from two
-sets of transition probabilities into differences from each each age-stage transition. Intuitively this means
-we can assign how much of a difference is due to differences in each arrow in
-the state-space diagram of the model in question. We demonstrate this
-decomposition technique using published transition matrices from a recent study
-of working life expectancy in the United States \citep{Dudel2017}.
+I describe the application of a generic pseudo-continuous time decomposition \citep{horiuchi2008} of differences between synthetic indices derived from two sets of transition probabilities and radix compositions into differences from each each age-stage transition and the radix composition. This decomposition implies an extra analytic step (beyond standard decomposition) in order to account for compositional nature of transition probabilities. Namely, the transition probabilities originating at a
+given state and age necessarily sum to 1. For example, it is necessary that an employed 50-year old could stay employed, move to another state, or die, and so the sum of the probabilities of these events must be 1. Any decomposition method that operates by elementwise perturbation of these elements must respect this constraint.
+
+ Intuitively this means we can assign how much of a difference is due to differences in each directed flow in the state-space diagram of the model in question. I demonstrate this decomposition technique using published transition matrices from a recent study of working life expectancy in the United States \citep{Dudel2017}.
 
 \section{Method}
-\subsection{Calculate the index, $\theta$ from exit probabilities}
-Say we have a model with $s$ states and $\omega$ age classes, and manage to
-produce matrix of transition probabilities, $\textbf{U}$, with ages nested
-within block matrices of state transitions. This matrix will be square of
-dimension $s\omega \times s\omega$, and each $\omega \times \omega$ block in
-$\textbf{U}$ contains the transition probabilities from state $j$ to state $i$
-in its subdiagonal. We'll follow the convention of \emph{from} states $j$ in
-columns and \emph{to} states $i$ in rows. Now,
-the main subdiagonal of $\textbf{U}$ contains the probabilities of staying in
-one's state and advancing to the next age, often represented as
-\emph{self} arrows in reduced state-space diagrams. 
+\subsection{Requisites}
+The data and model requisites to decompose in the desired way are a (functionally programmed) discrete time multistate model and two sets of parameters for it, where parameters include all data requisites, both transition probabilities and radix compositions.
 
-Now say we calculate some quantity $\theta$ from $\textbf{U}$, that depends on
-all its transition probabilities, such as an expected state occpancy (e.g. health
-or employment). Define the function summarizing all the steps involved in
-calculating $\theta$ from $\textbf{U}$:
+Say we have a model with $s$ states and $\omega$ age classes, then the transition matrix contains up to $s^2\cdot\omega$ parameters, and a further $s$ parameters implied by a composed radix.
+
+
+and manage to produce a matrix of transition probabilities, $\textbf{U}$, with ages nested within block matrices of state transitions. This matrix will be square of dimension $s\omega \times s\omega$, and each $\omega \times \omega$ block in $\textbf{U}$ contains the transition probabilities from state $j$ to state $i$ in its subdiagonal. We'll follow the convention of \emph{from} states $j$ in columns and \emph{to} states $i$ in rows. Now,
+the main subdiagonal of $\textbf{U}$ contains the probabilities of staying in one's state and advancing to the next age, often represented as \emph{self} arrows in reduced state-space diagrams. 
+
+Now say we calculate some quantity $\theta$ from $\textbf{U}$, that depends on all its transition probabilities, such as an expected state occpancy (e.g. health or employment). Define the function summarizing all the steps involved in calculating $\theta$ from $\textbf{U}$:
 \begin{equation}
  \theta = f^\theta(\textbf{U})
 \end{equation}
-Although expectancies and such are calculated on the
-basis of \emph{living} transition probabilities, for purposes of decomposition
-they are best treated as a function of \emph{exits} in general. By analogy, when
-decomposing differences in life epectancy from the lifetable, we always
-decompose with respect to death transitions and not age-specific survival
-probabilities. The same rule applies to state occupancies with many potential
-exits. If we wish to partition an expected state occupancy into contributions
-from each of the various transitions, we therefore need to include death
-transitions and exclude self-transitions from the decomposition. We therefore
-require a function to convert a vector of all transfer probabilities implying
-state exit into the matrix $\textbf{U}$. This is more a matter of program
-organization that it is of mathematical notation. We know from the lifetable
-that $p_x = 1 - q_x$. Translating this to the present situation, given a set of
-exit probabilities, we can derive self-transition probabilities, $p_{s,s}$ in
-much the same way:
+Although expectancies and such are calculated on the basis of \emph{living} transition probabilities, for purposes of decomposition they are best treated as a function of \emph{exits} in general. By analogy, when decomposing differences in life epectancy from the lifetable, we always decompose with respect to death transitions and not age-specific survival probabilities. The same rule applies to state occupancies with many potential exits. If we wish to partition an expected state occupancy into contributions from each of the various transitions, we therefore need to include death transitions and exclude self-transitions from the decomposition. We therefore require a function to convert a vector of all transfer probabilities implying state exit into the matrix $\textbf{U}$. This is more a matter of program organization that it is of mathematical notation. We know from the lifetable that $p_x = 1 - q_x$. Translating this to the present situation, given a set of exit probabilities, we can derive self-transition probabilities, $p_{s,s}$ in much the same way:
 \begin{equation}
  p_{s,s} = \left[1 - \sum p_{i,s} \right] \quad \text{for~} i \ne s
 \end{equation}
-Assume we have a vector of exit probabilities, $\textbf{p}^{(i \ne s)}$ then it
-is possible to convert this into the required matrix $\textbf{U}$ via some steps
-in a function $g^U$:
+Assume we have a vector of exit probabilities, $\textbf{p}^{(i \ne s)}$ then it is possible to convert this into the required matrix $\textbf{U}$ via some steps in a function $g^U$:
 \begin{equation}
 \textbf{U} = g^U\left(\textbf{p}^{(i \ne s)}\right)
 \end{equation}
@@ -112,68 +77,53 @@ Let's make notation easier and wrap that all in a function $\zeta$:
 \label{eq:zeta}
 \theta = \zeta\left(\textbf{p}^{(i \ne s)}\right)
 \end{equation}
-Now $\zeta$ is a function that is decomposable using generic decomposition
-methods, such as the pseudo continuous method of \citet{horiuchi2008}, which
-merits a brief summary.
+Now $\zeta$ is a function that is decomposable using generic decomposition methods, such as the pseudo continuous method of \citet{horiuchi2008}, which merits a brief summary.
 
 \subsection{Summary of Horiuchi's decomposition method}
-Given two vectors of equal structure and length $\textbf{p}^{1(i \ne s)}$ and
-$\textbf{p}^{2(i \ne s)}$ (henceforth $\textbf{p}^1$ and $\textbf{p}^2$), which
-may refer to two different populations or time points, we may calculate
-$\theta^1$ and $\theta^2$ via \eqref{eq:zeta}.
-The difference between $\theta^2$ and $\theta^1$, $\Delta^{(\theta)}$ can be
-decomposed into contributions due to elementwise differences in $\textbf{p}^1$ and
-$\textbf{p}^2$, $\Delta^{(p)}$ (also a vector). The method of
-\citet{horiuchi2008} works by assuming a regular linear (though this is not necessary) change transforming $\textbf{p}^{1}$ into
-$\textbf{p}^{2}$. Say we move from $\textbf{p}^1$ to $\textbf{p}^2$ in $n$
-steps. In each step, each element moves $\Delta^{(p)} \frac{1}{n}$ of the respective difference. Within each step, there is therefore a new vector
-composed of an intermediate set of values, $\textbf{p}^n$ from which $\theta$
-may be recalculated. In each of the $n$ steps, we perturb the elements of
-$\textbf{p}^n$ one at a time, pushing up the $i^{th}$ element
-$\frac{\Delta^{(p)}[i]}{2n}$, calculating $\theta^{+i}$, then pushing the same
-element down by the same amount and calculating $\theta^{-i}$. The difference between $\theta^{+i}$ and
-$\theta^{-i}$ is taken as the contribution to $\theta^2-\theta^1$ from element
-$i$ in step $n$. If there are $s\times\omega$ elements of
-$\textbf{p}^{(n)}$, we recalculate $\theta$ a total of $n\times2\times
-s\times\omega$ times. When complete, these contributions sum to
-$\theta^2-\theta^1$ with a trivial error that depends mostly on $n$.
-Typically, the contributions for each age and stage are summed over the $n$ ``time'' steps used in the procedure, producing a total of
-$s \times \omega$ contributions that are the output that the researcher is
-actually interested in. This vector of contributions can be aggregated in any
-way to suit the needs of the researcher and facilitate interpretation. 
+Given two vectors of equal structure and length $\textbf{p}^{1(i \ne s)}$ and $\textbf{p}^{2(i \ne s)}$ (henceforth $\textbf{p}^1$ and $\textbf{p}^2$), which may refer to two different populations or time points, we may calculate $\theta^1$ and $\theta^2$ via \eqref{eq:zeta}. The difference between $\theta^2$ and $\theta^1$, $\Delta^{(\theta)}$ can be decomposed into contributions due to elementwise differences in $\textbf{p}^1$ and $\textbf{p}^2$, $\Delta^{(p)}$ (also a vector). The method of
+\citet{horiuchi2008} works by assuming a regular linear (though this is not necessary) change transforming $\textbf{p}^{1}$ into $\textbf{p}^{2}$. Say we move from $\textbf{p}^1$ to $\textbf{p}^2$ in $n$ steps. In each step, each element moves $\Delta^{(p)} \frac{1}{n}$ of the respective difference. Within each step, there is therefore a new vector composed of an intermediate set of values, $\textbf{p}^n$ from which $\theta$
+may be recalculated. In each of the $n$ steps, we perturb the elements of $\textbf{p}^n$ one at a time, pushing up the $i^{th}$ element $\frac{\Delta^{(p)}[i]}{2n}$, calculating $\theta^{+i}$, then pushing the same element down by the same amount and calculating $\theta^{-i}$. The difference between $\theta^{+i}$ and $\theta^{-i}$ is taken as the contribution to $\theta^2-\theta^1$ from element $i$ in step $n$. If there are $s\times\omega$ elements of $\textbf{p}^{(n)}$, we recalculate $\theta$ a total of $n\times2\times s\times\omega$ times. When complete, these contributions sum to $\theta^2-\theta^1$ with a trivial error that depends mostly on $n$.
 
-Even if $\zeta$ is simple, this procedure is computationally
-intensive. The only parameter that can easily be changed is $n$, the number of
-``time'' steps. \citet{horiuchi2008} recommend 20 as a practical number of
-steps, and in my own experience there is little payoff for using an $n$ of 100.
-In the following demonstration we'll opt for an $n$ of 10. Depending on the
-size of the exercise at hand, it may be worth the researcher's time to efficiently program $\zeta$.
+Typically, the contributions for each age and stage are summed over the $n$ ``time'' steps used in the procedure, producing a total of $s \times \omega$ contributions that are the output that the researcher is actually interested in. This vector of contributions can be aggregated in any way to suit the needs of the researcher and facilitate interpretation. 
 
-The researcher may of course swap out the Horiuchi method for a different
-generic decomposition method, such as Blinder-Oaxaca decomposition
-\citep{blinder1973wage, oaxaca1973male} or life table response experiments
-\citep{caswell1989analysis}. I've opted for Horiuchi decomposition because it is
-implemented in a generic form \texttt{R} in the package
-\texttt{DecompHoriuchi}\footnote{\texttt{DecompHoriuchi} can be installed from
-\texttt{github}: \url{https://github.com/timriffe/DecompHoriuchi}.}, which means
-I only need to write a function that does \eqref{eq:zeta}.
+Even if $\zeta$ is simple, this procedure is computationally intensive. The only parameter that can easily be changed is $n$, the number of ``time'' steps. \citet{horiuchi2008} recommend 20 as a practical number of steps, and in my own experience there is little payoff for using an $n$ of 100. In the following demonstration we'll opt for an $n$ of 10. Depending on the size of the exercise at hand, it may be worth the researcher's time to efficiently program $\zeta$.
+
+The researcher may of course swap out the Horiuchi method for a different generic decomposition method, such as Blinder-Oaxaca decomposition \citep{blinder1973wage, oaxaca1973male} or life table response experiments \citep{caswell1989analysis}. I've opted for Horiuchi decomposition because it is implemented in a generic form \texttt{R} in the package \texttt{DemoDecomp}\footnote{\texttt{DemoDecomp} can be installed from \texttt{github}: \url{https://github.com/timriffe/DemoDecomp}.} or from CRAN \texttt{install.packages("DemoDecomp")}, which means one only needs to write a function that does \eqref{eq:zeta}.
 
 \section{Application}
-I apply this approach to a few of the transition matrices published
-by \citet{Dudel2017} for ages 50+. Specifically, I decompose differences in
-working life expectancy (WLE). The reduced (not showing
-age) state space graph of this model is as drawn in Figure~\ref{fig:dudelstates}. Note that the elements of $\textbf{p}$ are all arrows leaving a given state not including self-arrows. This is transformed to $\textbf{U}$, which contains all
-arrows including self-arrows and excluding arrows pointing to death. 
+I apply this approach to a few of the transition matrices published by \citet{Dudel2017} for ages 50+. Specifically, I decompose differences in working life expectancy (WLE). The reduced (not showing age) state space graph of this model is as drawn in Figure~\ref{fig:dudelstates}. Note that the elements of $\textbf{p}$ are all arrows leaving a given state not including self-arrows. This is transformed to $\textbf{U}$, which contains all arrows including self-arrows and excluding arrows pointing to death. 
 
 \begin{figure}[ht!]
 \begin{center}
 \caption{State space graph of \citet{Dudel2017}}
 \label{fig:dudelstates}
-\includegraphics[scale=.12]{Figures/StateSpace.jpg}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
+  thick,main node/.style={draw}]
+
+  \node[main node] (1) {Employed};
+  \node[main node] (2) [below left of=1] {Retired};
+  \node[main node] (3) [below right of=2] {Dead};
+  \node[main node] (4) [below right of=1] {Inactive/unemployed};
+
+  \path[every node/.style={font=\sffamily\small}]
+    (1) edge node [left] {} (3)
+    (1) edge [bend right] node [left] {} (2)
+    (1) edge [loop above] node {} (1)
+		(1) edge [bend left] node {} (4)
+    (2) edge node [right] {} (1)
+    (2) edge [bend left] node {} (4)
+    (2) edge [loop left] node {} (2)
+    (2) edge node[left] {} (3)
+    (3) edge [loop below] node {} (3)
+    (4) edge node [left] {} (3)
+		(4) edge node [left] {} (1)
+		(4) edge [bend left] node [right] {} (2)
+    (4) edge [loop right] node {} (4);
+\end{tikzpicture}
 \end{center}
 \end{figure}
 
-We haphazardly select four matrices from which to make two comparisons: black
+I haphazardly select four matrices from which to make two comparisons: black
 females in 2004 vs 2009, and high versus low-educated black females in
 2009.\footnote{The requisite matrices come from the files
 \texttt{Pmat\_b\_f\_2004.csv}, \texttt{Pmat\_b\_f\_2009.csv}, \texttt{Pmat\_b\_f\_edu0\_2009.csv}, and

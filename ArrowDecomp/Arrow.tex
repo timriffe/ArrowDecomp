@@ -1,6 +1,6 @@
 
-\documentclass{article}
-\usepackage[a4paper, margin=2.5cm]{geometry}
+\documentclass[12pt]{article}
+\usepackage[a4paper, margin=1.5in]{geometry}
 \usepackage{amsmath}
 \usepackage{caption}
 \usepackage{placeins}
@@ -40,7 +40,10 @@
 I demonstrate the application of standard decomposition techniques to decompose differences between synthetic indices derived from discrete-time age-stage Markov matrix models (MS models) into differences due to each combinatin of age and stage transition, as well as the starting (radix) composition. An example is given on the basis of transition matrices from an analysis of working life expectancy in the United States.
 \end{abstract}
 
+\doublespacing
 \section{Introduction}
+Multistate models are a widely used method to estimate average time spent in states as a result of a process based on estimated transition rates or probabilities. The same methods can also be directed to estimate other statistics, such as the variance of state occupancy, or even the full distribution of time spent in each state. These models may have more complicated setups, including strata, such as education groups, such that statistics derived are a result of blending strata.
+
 I describe the application of a generic pseudo-continuous time decomposition \citep{horiuchi2008} of differences between synthetic indices derived from two sets of transition probabilities and radix compositions into differences from each each age-stage transition and the radix composition. This decomposition implies an extra analytic step (beyond standard decomposition) in order to account for compositional nature of transition probabilities. Namely, the transition probabilities originating at a
 given state and age necessarily sum to 1. For example, it is necessary that an employed 50-year old could stay employed, move to another state, or die, and so the sum of the probabilities of these events must be 1. Any decomposition method that operates by elementwise perturbation of these elements must respect this constraint.
 
